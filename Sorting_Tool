@@ -1,0 +1,279 @@
+package sorting;
+
+import java.io.*;
+import java.util.*;
+
+enum Type {
+    LONG("long"),
+    LINE("line"),
+    WORD("word");
+
+    final String name;
+
+    Type (String name) {
+        this.name = name;
+    }
+
+    public static Type findByName(String name) {
+        for (Type value:
+             values()) {
+            if (value.name.equals(name)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    public static void printInfo(Type type, Scanner scanner, String sortingType, String output) {
+        int total = 0;
+        long max = 0;
+        int kolMax = 0;
+        String longest = "";
+        List<String> strings = new ArrayList<>();
+        List<Integer> integers = new ArrayList<>();
+        List<String> isNot = new ArrayList<>();
+        if (type == LONG) {
+            while (scanner.hasNext()) {
+                String infoScanner = scanner.next();
+                try {
+                    long number = Long.parseLong(infoScanner);
+                    total++;
+                    integers.add((int) number);
+                    strings.add(String.valueOf(number));
+                    if (number > max) {
+                        max = number;
+                        kolMax = 1;
+                    } else if (number == max) {
+                        kolMax++;
+                    }
+                } catch (NumberFormatException e) {
+                    isNot.add(infoScanner);
+                }
+            }
+            isNot.forEach(x -> System.out.printf("\"%s\"  is not a long. It will be skipped.\n", x));
+            System.out.printf("Total numbers: %d.\n", total);
+            if (sortingType.equals("")) {
+                double percentage = 100 * ((double) kolMax / total);
+                System.out.printf("The greatest number: %d (%d time(s), %d%%).", max, kolMax, (int) percentage);
+            }
+        } else if (type == LINE) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                total++;
+                strings.add(line);
+                int length = line.length();
+                if (length > max) {
+                    max = length;
+                    longest = line;
+                    kolMax = 1;
+                } else if (length == max){
+                    kolMax++;
+                }
+            }
+            System.out.printf("Total lines: %d.\n", total);
+            if (sortingType.equals("")) {
+                double percentage = 100 * ((double)kolMax / total);
+                System.out.printf("The longest line:\n%s\n(%d time(s), %d%%).", longest, kolMax, (int) percentage);
+            }
+        } else {
+            while (scanner.hasNext()) {
+                String word = scanner.next();
+                total++;
+                strings.add(word);
+                int length = word.length();
+                if (length > max) {
+                    max = length;
+                    longest = word;
+                    kolMax = 1;
+                } else if (length == max){
+                    kolMax++;
+                }
+            }
+            System.out.printf("Total words: %d.\n", total);
+            if (sortingType.equals("")) {
+                double percentage = 100 * ((double) kolMax / total);
+                System.out.printf("The longest word: %s (%d time(s), %d%%).", longest, kolMax, (int) percentage);
+            }
+        }
+        if (sortingType.equals("natural")) {
+            if (type == LINE) {
+                Comparator<String> comparator = String::compareTo;
+                strings.sort(comparator);
+                if (output != null) {
+                    File file = new File(output);
+                    try (PrintWriter writer = new PrintWriter(file)) {
+                        writer.print("Sorted data: ");
+                        for (String i : strings) {
+                            writer.println(i + " ");
+                        }
+                    } catch (IOException e) {
+                        System.out.printf("An exception occurred %s", e.getMessage());
+                    }
+                } else {
+                    System.out.print("Sorted data: ");
+                    for (String i : strings) {
+                        System.out.println(i + " ");
+                    }
+                }
+            } else if (type == WORD){
+                Comparator<String> comparator = String::compareTo;
+                strings.sort(comparator);
+                if (output != null) {
+                    File file = new File(output);
+                    try (PrintWriter writer = new PrintWriter(file)) {
+                        writer.print("Sorted data: ");
+                        for (String i : strings) {
+                            writer.print(i + " ");
+                        }
+                    } catch (IOException e) {
+                        System.out.printf("An exception occurred %s", e.getMessage());
+                    }
+                } else {
+                    System.out.print("Sorted data: ");
+                    for (String i : strings) {
+                        System.out.print(i + " ");
+                    }
+                }
+            } else {
+                Comparator<Integer> comparator = Integer::compareTo;
+                integers.sort(comparator);
+                if (output != null) {
+                    File file = new File(output);
+                    try (PrintWriter writer = new PrintWriter(file)) {
+                        writer.print("Sorted data: ");
+                        for (Integer i : integers) {
+                            writer.print(i + " ");
+                        }
+                    } catch (IOException e) {
+                        System.out.printf("An exception occurred %s", e.getMessage());
+                    }
+                } else {
+                    System.out.print("Sorted data: ");
+                    for (Integer i : integers) {
+                        System.out.print(i + " ");
+                    }
+                }
+            }
+        } else {
+            if (type != LONG) {
+                TreeMap<String, Integer> map = new TreeMap<>();
+                strings.forEach(value -> map.merge(value, 1, Integer::sum));
+                LinkedHashMap<String, Integer> linkedHashMap = new LinkedHashMap<>();
+                map.entrySet().stream()
+                        .sorted(Map.Entry.comparingByValue())
+                        .forEach(value -> linkedHashMap.put(value.getKey(), value.getValue()));
+                int finalTotal = total;
+                if (output != null) {
+                    File file = new File(output);
+                    try (PrintWriter writer = new PrintWriter(file)) {
+                        linkedHashMap.forEach((key, value) -> {
+                            int percent = (100 * value) / finalTotal;
+                            writer.println(key + ": " + value + " time(s), " + percent + "%");
+                        });
+                    } catch (IOException e) {
+                        System.out.printf("An exception occurred %s", e.getMessage());
+                    }
+                }
+                linkedHashMap.forEach((key, value) -> {
+                    int percent = (100 * value) / finalTotal;
+                    System.out.println(key + ": " + value + " time(s), " + percent + "%");
+                });
+            } else {
+                TreeMap<Integer, Integer> map = new TreeMap<>();
+                integers.forEach(value -> map.merge(value, 1, Integer::sum));
+                LinkedHashMap<Integer, Integer> linkedHashMap = new LinkedHashMap<>();
+                map.entrySet().stream()
+                        .sorted(Map.Entry.comparingByValue())
+                        .forEach(value -> linkedHashMap.put(value.getKey(), value.getValue()));
+                int finalTotal = total;
+                if (output != null) {
+                    File file = new File(output);
+                    try (PrintWriter writer = new PrintWriter(file)) {
+                        linkedHashMap.forEach((key, value) -> {
+                            int percent = (100 * value) / finalTotal;
+                            writer.println(key + ": " + value + " time(s), " + percent + "%");
+                        });
+                    } catch (IOException e) {
+                        System.out.printf("An exception occurred %s", e.getMessage());
+                    }
+                } else {
+                    linkedHashMap.forEach((key, value) -> {
+                        int percent = (100 * value) / finalTotal;
+                        System.out.println(key + ": " + value + " time(s), " + percent + "%");
+                    });
+                }
+            }
+        }
+    }
+}
+
+public class Main {
+    public static void main(final String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Scanner scanner1 = null;
+        boolean scannerCheck = false;
+        String filename = null;
+        String name = "word";
+        String sortingType = "natural";
+        ArrayList<String> unnecessaryParam = new ArrayList<>();
+        if (args.length >= 1) {
+            for (int i = 0; i < args.length; i++) {
+                if (!args[i].equals("java") & !args[i].equals("SortingTool") &
+                        !args[i].equals("-sortingType") & !args[i].equals("-dataType") &
+                        !args[i].equals("byCount") & !args[i].equals("natural") & !args[i].equals("long")
+                        & !args[i].equals("word") & !args[i].equals("line")) {
+                    unnecessaryParam.add(args[i]);
+                }
+                switch (args[i]) {
+                    case "-dataType":
+                        try {
+                            if ("word".equals(args[i + 1])) {
+                                name = "word";
+                            } else if ("long".equals(args[i + 1])) {
+                                name = "long";
+                            } else if ("line".equals(args[i + 1])) {
+                                name = "line";
+                            }
+                        } catch (IndexOutOfBoundsException e) {
+                            System.out.println("No data type defined!");
+                        }
+                        break;
+                    case "-sortingType":
+                        try {
+                            if ("byCount".equals(args[i + 1])) {
+                                sortingType = "byCount";
+                            } else if ("natural".equals(args[i + 1])) {
+                                sortingType = "natural";
+                            }
+                        } catch (IndexOutOfBoundsException e) {
+                            System.out.println("No sorting type defined!");
+                        }
+                        break;
+                    case "-inputFile":
+                        try {
+                            File file = new File(args[i + 1]);
+                            scanner1 = new Scanner(file);
+                            scannerCheck = true;
+                        } catch (IndexOutOfBoundsException | FileNotFoundException e) {
+                            System.out.println("No input file found!");
+                        }
+                        break;
+                    case "-outputFile":
+                        try {
+                            filename = args[i + 1];
+                        } catch (IndexOutOfBoundsException e) {
+                            System.out.println("No output file found!");
+                        }
+                        break;
+                }
+            }
+        }
+        unnecessaryParam.forEach(x -> System.out.printf("\"%s\"  is not a valid parameter. It will be skipped.\n", x));
+        Type type = Type.findByName(name);
+        if (scannerCheck) {
+            Type.printInfo(type, scanner1, sortingType, filename);
+        } else {
+            Type.printInfo(type, scanner, sortingType, filename);
+        }
+    }
+}
